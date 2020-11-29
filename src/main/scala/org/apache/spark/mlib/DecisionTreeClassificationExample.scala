@@ -20,7 +20,7 @@ object DecisionTreeClassificationExample {
 
     // $example on$
     // Load and parse the data file.
-    val data = sc.textFile("src/main/resources/data/tennis.tsv")
+    val data = sc.textFile("hdfs://localhost:9000/data/tennis.tsv")
     val parsedData = data.map {
       line =>  val parts = line.split(',').map(_.toDouble)
         LabeledPoint(parts(parts.length-1), Vectors.dense(parts.init))
@@ -57,16 +57,16 @@ object DecisionTreeClassificationExample {
     println(s"Learned classification tree model:\n ${model.toDebugString}")
 
     // Save and load model
-    model.save(sc, "target/tmp/myDTClassificationModel")
-    val sameModel = DecisionTreeModel.load(sc, "target/tmp/myDTClassificationModel")
+    model.save(sc, "hdfs://localhost:9000/tmp/myDTClassificationModel")
+    val sameModel = DecisionTreeModel.load(sc, "hdfs://localhost:9000/tmp/myDTClassificationModel")
 
 
-    val newData = sc.textFile("src/main/resources/data/tennis_preview.tsv")
+    val newData = sc.textFile("hdfs://localhost:9000/data/tennis_preview.tsv")
     val parsedNewData = newData.map {
       line =>  val parts = line.split(',').map(_.toDouble)
         (parts(0),Vectors.dense(parts.init))
     }
-    parsedNewData.map(l => (l._1,model.predict(l._2))).saveAsTextFile("src/main/resources/data/result.csv")
+    parsedNewData.map(l => (l._1,model.predict(l._2))).saveAsTextFile("hdfs://localhost:9000/data/result.csv")
     sc.stop()
   }
 
