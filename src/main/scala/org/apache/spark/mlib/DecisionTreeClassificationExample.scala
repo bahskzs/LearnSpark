@@ -19,9 +19,9 @@ object DecisionTreeClassificationExample {
     // $example on$
     // Load and parse the data file.
     val data = MLUtils.loadLibSVMFile(sc, "src/main/resources/data/sample_libsvm_data.txt")
-    //val data = sc.textFile("src/main/resources/data/tennis.tsv")
+    //val train.csv = "src/main/resources/data/tennis.tsv"
     // Split the data into training and test sets (30% held out for testing)
-    val splits = data.randomSplit(Array(0.7, 0.3))
+    val splits = data.randomSplit(Array(0.7, 0.3),12345L)
     val (trainingData, testData) = (splits(0), splits(1))
 
     // Train a DecisionTree model.
