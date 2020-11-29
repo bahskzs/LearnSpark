@@ -19,7 +19,7 @@ object DecisionTreeDemo {
     val conf = new SparkConf().setMaster("local").setAppName("Decision Tree")
     val sc = new SparkContext(conf)
     println("load files ...")
-    val data = sc.textFile("hdfs://10.96.12.229:8020/ods_data/tennis.csv")
+    val data = sc.textFile("src/main/resources/data/tennis.csv")
     val parsedData = data.map {
       line =>  val parts = line.split(',').map(_.toDouble)
       LabeledPoint(parts(0), Vectors.dense(parts.tail))

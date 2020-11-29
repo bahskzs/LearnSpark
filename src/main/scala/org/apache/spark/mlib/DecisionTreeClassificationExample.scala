@@ -1,5 +1,7 @@
 package org.apache.spark.mlib
 
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.DecisionTree
 import org.apache.spark.mllib.tree.model.DecisionTreeModel
 import org.apache.spark.mllib.util.MLUtils
@@ -18,17 +20,24 @@ object DecisionTreeClassificationExample {
 
     // $example on$
     // Load and parse the data file.
-    val data = MLUtils.loadLibSVMFile(sc, "src/main/resources/data/sample_libsvm_data.txt")
-    //val data = sc.textFile("src/main/resources/data/tennis.tsv")
-    // Split the data into training and test sets (30% held out for testing)
-    val splits = data.randomSplit(Array(0.7, 0.3))
+    val data = sc.textFile("src/main/resources/data/tennis.tsv")
+    val parsedData = data.map {
+      line =>  val parts = line.split(',').map(_.toDouble)
+        LabeledPoint(parts(parts.length-1), Vectors.dense(parts.init))
+    }
+    val splits = parsedData.randomSplit(Array(0.7, 0.3),12345L)
     val (trainingData, testData) = (splits(0), splits(1))
+    println("---------trainData-----------")
+    trainingData.foreach(println)
+
+    println("---------testData-----------")
+    testData.foreach(println)
 
     // Train a DecisionTree model.
     //  Empty categoricalFeaturesInfo indicates all features are continuous.
-    val numClasses = 2
+    val numClasses = 10
     val categoricalFeaturesInfo = Map[Int, Int]()
-    val impurity = "gini"
+    val impurity = "entropy"
     val maxDepth = 5
     val maxBins = 32
 
@@ -40,15 +49,25 @@ object DecisionTreeClassificationExample {
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
+    println("------------result---------------")
+    labelAndPreds.foreach(println)
+
     val testErr = labelAndPreds.filter(r => r._1 != r._2).count().toDouble / testData.count()
     println(s"Test Error = $testErr")
     println(s"Learned classification tree model:\n ${model.toDebugString}")
 
     // Save and load model
-    model.save(sc, "target/tmp/myDecisionTreeClassificationModel")
-    val sameModel = DecisionTreeModel.load(sc, "target/tmp/myDecisionTreeClassificationModel")
-    // $example off$
+    model.save(sc, "target/tmp/myDTClassificationModel")
+    val sameModel = DecisionTreeModel.load(sc, "target/tmp/myDTClassificationModel")
 
+
+    val newData = sc.textFile("src/main/resources/data/tennis_preview.tsv")
+    val parsedNewData = newData.map {
+      line =>  val parts = line.split(',').map(_.toDouble)
+        (parts(0),Vectors.dense(parts.init))
+    }
+    parsedNewData.map(l => (l._1,model.predict(l._2))).saveAsTextFile("src/main/resources/data/result.csv")
     sc.stop()
   }
+
 }
