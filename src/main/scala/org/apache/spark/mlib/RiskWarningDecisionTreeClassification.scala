@@ -13,7 +13,7 @@ import org.apache.spark.{SparkConf, SparkContext}
  * @date 2020-10-05 20:26
  *      url:https://spark.apache.org/docs/latest/mllib-decision-tree.html
  */
-object DecisionTreeClassificationExample {
+object RiskWarningDecisionTreeClassification {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setMaster("local").setAppName("DecisionTreeClassification")
     val sc = new SparkContext(conf)
@@ -66,7 +66,8 @@ object DecisionTreeClassificationExample {
       line =>  val parts = line.split(',').map(_.toDouble)
         (parts(0),Vectors.dense(parts.init))
     }
-    parsedNewData.map(l => (l._1,model.predict(l._2))).saveAsTextFile("hdfs://localhost:9000/data/result.csv")
+    parsedNewData.map(l => (l._1,model.predict(l._2)).toString().replaceAll("\\(","").replaceAll("\\)","")
+    ).saveAsTextFile("hdfs://localhost:9000/data/result.csv")
     sc.stop()
   }
 
