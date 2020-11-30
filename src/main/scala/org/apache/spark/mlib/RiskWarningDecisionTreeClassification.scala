@@ -1,11 +1,13 @@
 package org.apache.spark.mlib
 
+
+
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.DecisionTree
 import org.apache.spark.mllib.tree.model.DecisionTreeModel
-import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.{SparkConf, SparkContext}
+
 
 /**
  *
@@ -20,7 +22,7 @@ object RiskWarningDecisionTreeClassification {
 
     // $example on$
     // Load and parse the data file.
-    val data = sc.textFile("hdfs://localhost:9000/data/tennis.tsv")
+    val data = sc.textFile("hdfs://192.168.41.244:8020/data/tennis.tsv")
     val parsedData = data.map {
       line =>  val parts = line.split(',').map(_.toDouble)
         LabeledPoint(parts(parts.length-1), Vectors.dense(parts.init))
@@ -57,17 +59,17 @@ object RiskWarningDecisionTreeClassification {
     println(s"Learned classification tree model:\n ${model.toDebugString}")
 
     // Save and load model
-    model.save(sc, "hdfs://localhost:9000/tmp/myDTClassificationModel")
-    val sameModel = DecisionTreeModel.load(sc, "hdfs://localhost:9000/tmp/myDTClassificationModel")
+    model.save(sc, "hdfs://192.168.41.244:8020/tmp/myDTClassificationModel")
+    val sameModel = DecisionTreeModel.load(sc, "hdfs://192.168.41.244:8020/tmp/myDTClassificationModel")
 
 
-    val newData = sc.textFile("hdfs://localhost:9000/data/tennis_preview.tsv")
+    val newData = sc.textFile("hdfs://192.168.41.244:8020/data/tennis_preview.tsv")
     val parsedNewData = newData.map {
       line =>  val parts = line.split(',').map(_.toDouble)
         (parts(0),Vectors.dense(parts.init))
     }
     parsedNewData.map(l => (l._1,model.predict(l._2)).toString().replaceAll("\\(","").replaceAll("\\)","")
-    ).saveAsTextFile("hdfs://localhost:9000/data/result.csv")
+    ).saveAsTextFile("hdfs://192.168.41.244:8020/data/result")
     sc.stop()
   }
 
